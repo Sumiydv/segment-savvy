@@ -9,9 +9,20 @@ import { useVideoTracking } from '@/hooks/useVideoTracking';
 interface VideoPlayerProps {
   video: VideoData;
   className?: string;
+  onNextVideo?: () => void;
+  onPreviousVideo?: () => void;
+  hasNextVideo?: boolean;
+  hasPreviousVideo?: boolean;
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, className }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ 
+  video, 
+  className,
+  onNextVideo,
+  onPreviousVideo,
+  hasNextVideo,
+  hasPreviousVideo
+}) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const progressBarRef = useRef<HTMLDivElement>(null);
   
@@ -58,7 +69,12 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, className }) => {
         preload="metadata"
         onPlay={() => setIsPlaying(true)}
         onPause={() => setIsPlaying(false)}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={() => {
+          setIsPlaying(false);
+          if (onNextVideo && hasNextVideo) {
+            onNextVideo();
+          }
+        }}
       />
       
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 px-4 text-white">
@@ -78,6 +94,10 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, className }) => {
           duration={duration}
           progress={progress}
           onPlayPause={togglePlayPause}
+          onNext={onNextVideo}
+          onPrevious={onPreviousVideo}
+          hasNext={hasNextVideo}
+          hasPrevious={hasPreviousVideo}
         />
       </div>
     </div>

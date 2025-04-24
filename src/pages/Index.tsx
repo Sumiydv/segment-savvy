@@ -8,6 +8,7 @@ import { useVideoProgressStore } from '../store/videoProgressStore';
 
 const Index = () => {
   const [selectedVideo, setSelectedVideo] = useState<VideoData | null>(null);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const { loadFromStorage } = useVideoProgressStore();
   
   // Load progress from storage on initial load
@@ -15,17 +16,38 @@ const Index = () => {
     loadFromStorage();
   }, [loadFromStorage]);
   
-  // Select the first video by default, or the one with the most progress
+  // Select the first video by default
   useEffect(() => {
     if (sampleVideos.length > 0 && !selectedVideo) {
       setSelectedVideo(sampleVideos[0]);
+      setCurrentVideoIndex(0);
     }
   }, [selectedVideo]);
   
   const handleSelectVideo = (video: VideoData) => {
+    const index = sampleVideos.findIndex(v => v.id === video.id);
     setSelectedVideo(video);
+    setCurrentVideoIndex(index);
     // Scroll to top when selecting a new video
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNextVideo = () => {
+    if (currentVideoIndex < sampleVideos.length - 1) {
+      const nextVideo = sampleVideos[currentVideoIndex + 1];
+      setSelectedVideo(nextVideo);
+      setCurrentVideoIndex(currentVideoIndex + 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const handlePreviousVideo = () => {
+    if (currentVideoIndex > 0) {
+      const previousVideo = sampleVideos[currentVideoIndex - 1];
+      setSelectedVideo(previousVideo);
+      setCurrentVideoIndex(currentVideoIndex - 1);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
   
   return (
@@ -41,10 +63,22 @@ const Index = () => {
         {selectedVideo ? (
           <div className="space-y-8">
             <div className="max-w-3xl mx-auto">
-              <VideoPlayer video={selectedVideo} className="rounded-xl overflow-hidden shadow-xl" />
+              <VideoPlayer 
+                video={selectedVideo} 
+                className="rounded-xl overflow-hidden shadow-xl"
+                onNextVideo={handleNextVideo}
+                onPreviousVideo={handlePreviousVideo}
+                hasNextVideo={currentVideoIndex < sampleVideos.length - 1}
+                hasPreviousVideo={currentVideoIndex > 0}
+              />
               
               <div className="mt-4 space-y-2">
-                <h2 className="text-xl md:text-2xl font-semibold">{selectedVideo.title}</h2>
+                <div className="flex justify-between items-center">
+                  <h2 className="text-xl md:text-2xl font-semibold">{selectedVideo.title}</h2>
+                  <span className="text-sm text-gray-500">
+                    Lecture {currentVideoIndex + 1} of {sampleVideos.length}
+                  </span>
+                </div>
                 <p className="text-gray-700">{selectedVideo.description}</p>
               </div>
             </div>

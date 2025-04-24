@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Play, Pause } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 import { formatTime } from '@/lib/formatTime';
 
 interface VideoControlsProps {
@@ -10,6 +10,10 @@ interface VideoControlsProps {
   duration: number;
   progress?: { percentWatched: number };
   onPlayPause: () => void;
+  onNext?: () => void;
+  onPrevious?: () => void;
+  hasNext?: boolean;
+  hasPrevious?: boolean;
 }
 
 const VideoControls: React.FC<VideoControlsProps> = ({
@@ -18,10 +22,25 @@ const VideoControls: React.FC<VideoControlsProps> = ({
   duration,
   progress,
   onPlayPause,
+  onNext,
+  onPrevious,
+  hasNext,
+  hasPrevious,
 }) => {
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center space-x-2">
+        {hasPrevious && (
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="text-white hover:bg-white/20"
+            onClick={onPrevious}
+          >
+            <SkipBack size={18} />
+          </Button>
+        )}
+        
         <Button 
           variant="ghost" 
           size="icon"
@@ -30,6 +49,17 @@ const VideoControls: React.FC<VideoControlsProps> = ({
         >
           {isPlaying ? <Pause size={18} /> : <Play size={18} />}
         </Button>
+        
+        {hasNext && (
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="text-white hover:bg-white/20"
+            onClick={onNext}
+          >
+            <SkipForward size={18} />
+          </Button>
+        )}
         
         <div className="text-sm">
           {formatTime(currentTime)} / {formatTime(duration)}
