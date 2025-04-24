@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 import { VideoInterval, VideoProgress } from '../types/video';
 
@@ -52,7 +53,7 @@ const calculateWatchedTime = (intervals: VideoInterval[]): number => {
 };
 
 export const useVideoProgressStore = create<VideoProgressState>((set, get) => ({
-  progressMap: new Map(),
+  progressMap: new Map<string, VideoProgress>(),
   currentVideoId: null,
   
   initializeVideo: (videoId, totalDuration) => {
@@ -146,8 +147,8 @@ export const useVideoProgressStore = create<VideoProgressState>((set, get) => ({
     try {
       const serialized = localStorage.getItem('videoProgress');
       if (serialized) {
-        const entries = JSON.parse(serialized);
-        const loadedMap = new Map(entries);
+        const entries = JSON.parse(serialized) as [string, VideoProgress][];
+        const loadedMap = new Map<string, VideoProgress>(entries);
         set({ progressMap: loadedMap });
       }
     } catch (error) {
