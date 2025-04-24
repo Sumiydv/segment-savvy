@@ -33,18 +33,34 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, className }) => {
     loadFromStorage
   } = useVideoProgressStore();
   
-  // Initialize video
+  // Initialize video and handle metadata loading
   useEffect(() => {
     loadFromStorage();
-    initializeVideo(video.id, video.duration);
+    
+    const videoElement = videoRef.current;
+    if (!videoElement) return;
+    
+    // Load metadata to get actual duration
+    const handleMetadataLoaded = () => {
+      const actualDuration = videoElement.duration;
+      // Initialize with actual video duration from metadata
+      initializeVideo(video.id, actualDuration);
+      setDuration(actualDuration);
+    };
+    
+    videoElement.addEventListener('loadedmetadata', handleMetadataLoaded);
     
     // Load saved progress
     const savedProgress = getProgress(video.id);
-    if (savedProgress && videoRef.current) {
+    if (savedProgress && videoElement) {
       // Resume from last position
-      videoRef.current.currentTime = savedProgress.lastPosition;
+      videoElement.currentTime = savedProgress.lastPosition;
     }
-  }, [video.id, video.duration, initializeVideo, loadFromStorage, getProgress]);
+    
+    return () => {
+      videoElement.removeEventListener('loadedmetadata', handleMetadataLoaded);
+    };
+  }, [video.id, initializeVideo, loadFromStorage, getProgress]);
   
   // Set up interval for tracking playback
   useEffect(() => {
@@ -197,7 +213,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, className }) => {
         {/* Progress bar */}
         <div 
           ref={progressBarRef}
-          className="video-progress-bar relative mb-2"
+          className="video-progress-bar relative mb-2 h-1 bg-gray-600 cursor-pointer"
           onClick={handleProgressClick}
         >
           {/* Buffered indicator */}
@@ -211,8 +227,8 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ video, className }) => {
           
           {/* Current progress indicator */}
           <div 
-            className="video-progress-fill"
-            style={{ width: `${(currentTime / duration) * 100}%` }}
+            className="video-progress-fill absolute h-full bg-blue-500"
+            style={{ width: `${(currentTime / (duration || 1)) * 100}%` }}
           />
         </div>
         
